@@ -11,10 +11,6 @@
 
 /* Force enable N-key rollover (NKRO) */
 #define FORCE_NKRO
-#define QMK_KEYS_PER_SCAN 6
-
-/* USB polling rate */
-#define USB_POLLING_INTERNAL_MS 1  // 1000 Hz
 
 /* key matrix size */
 #define MATRIX_ROWS 4
@@ -44,13 +40,9 @@
 #    define RGBLIGHT_LIMIT_VAL 180  // Limit to vendor-recommended value
 // Default RGB light settings
 #    define RGBLIGHT_DEFAULT_MODE RGBLIGHT_MODE_STATIC_LIGHT
-#    define RGBLIGHT_DEFAULT_HUE 71
-#    define RGBLIGHT_DEFAULT_SAT 211
-#    define RGBLIGHT_DEFAULT_VAL 130
-//#    define RGBLIGHT_DEFAULT_HUE 176
-//#    define RGBLIGHT_DEFAULT_SAT 120
-//#    define RGBLIGHT_DEFAULT_VAL 72
-
+#    define RGBLIGHT_DEFAULT_HUE 176
+#    define RGBLIGHT_DEFAULT_SAT 120
+#    define RGBLIGHT_DEFAULT_VAL 40
 #    define RGBLIGHT_DEFAULT_SPD 0
 #endif
 #ifdef RGB_MATRIX_ENABLE
@@ -67,6 +59,8 @@
 #        define WS2812_LED_TOTAL 6
 #    endif
 #    define DRIVER_LED_TOTAL (ISSI_LED_TOTAL + WS2812_LED_TOTAL)
+
+#    define RGB_DISABLE_WHEN_USB_SUSPENDED // turn off effects when suspended
 #    define RGB_MATRIX_MAXIMUM_BRIGHTNESS RGBLIGHT_LIMIT_VAL // Limit to vendor-recommended value
 // Default RGB light settings
 #    define RGB_MATRIX_STARTUP_MODE RGB_MATRIX_SOLID_COLOR
@@ -131,7 +125,6 @@
 #endif
 
 #define RGBLIGHT_SLEEP
-#define RGB_DISABLE_WHEN_USB_SUSPENDED
 
 /* Via properties */
 #define DYNAMIC_KEYMAP_LAYER_COUNT 5
@@ -140,5 +133,3 @@
 #define VIAL_KEYBOARD_UID {0x42, 0x99, 0x2C, 0x9A, 0x03, 0x6D, 0xF1, 0x61}
 #define VIAL_UNLOCK_COMBO_ROWS { 1, 2 }
 #define VIAL_UNLOCK_COMBO_COLS { 0, 11 }
-
-#define CAPS_WORD_IDLE_TIMEOUT 0  // Never time out waiting for CAPS_WORD

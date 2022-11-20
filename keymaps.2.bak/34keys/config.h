@@ -14,7 +14,7 @@
 // Enable rapid switch from tap to hold, disables double tap hold auto-repeat.
 #define TAPPING_FORCE_HOLD
 
-// Recommended for heavy chording.
+// Recommended for heavy chording.          
 #define QMK_KEYS_PER_SCAN 4
 
 // Mouse key speed and acceleration.
@@ -30,8 +30,8 @@
 #define MOUSEKEY_TIME_TO_MAX    64
 
 //  The firmware is too large!
-#define COMBO_COUNT 1  // number of combo
-#define COMBO_TERM 80  // timeout period for combos to 40ms.
+#define COMBO_COUNT 1 // number of combo
+#define COMBO_TERM 80 // timeout period for combos to 40ms.
 
 //disable broken animations
 #ifdef RGB_MATRIX_ENABLE
