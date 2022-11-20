@@ -16,7 +16,14 @@ An ortholinear 40% hotswap keyboard with per-key in-board RGB LEDs and backlight
 ## Usage
 See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_tools) and the [make instructions](https://docs.qmk.fm/#/getting_started_make_guide) for more information. Brand new to QMK? Start with our [Complete Newbs Guide](https://docs.qmk.fm/#/newbs).
 
-### Building
+### Compiling
+
+#### Using QMK
+You need to setup your QMK build environment first, see [Usage](#usage).
+```
+qmk compile -kb kprepublic/bm40hsrgb/rev1 -km <KEYMAP>  # FOR REVISION 1
+qmk compile -kb kprepublic/bm40hsrgb/rev2 -km <KEYMAP>  # FOR REVISION 2
+```
 #### Using make
 You need to setup your QMK build environment first, see [Usage](#usage).
 ```
@@ -25,6 +32,13 @@ make kprepublic/bm40hsrgb/rev2:default  # FOR REVISION 2
 ```
 
 ### Flashing
+
+#### Using QMK
+You need to setup your QMK build environment first, see [Usage](#usage).
+```
+qmk flash -kb kprepublic/bm40hsrgb/rev1 -km <KEYMAP>  # FOR REVISION 1
+qmk flash -kb kprepublic/bm40hsrgb/rev2 -km <KEYMAP>  # FOR REVISION 2
+```
 #### Using make
 You need to setup your QMK build environment first, see [Usage](#usage).
 ```
