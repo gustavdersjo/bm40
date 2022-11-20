@@ -1,5 +1,5 @@
 # KPRepublic BM40 // bm40hsrgb
-![BM40 RGB](https://cdn.shopify.com/s/files/1/2711/4238/products/bm40rgb-bm40-rgb-40-hot-swappable-Custom-Mechanical-Keyboard-PCB-programmed-qmk-firmware-rgb-switch-underglow.jpg?v=1597062372)
+![BM40 RGB](bm40.jpg)
 
 An ortholinear 40% hotswap keyboard with per-key in-board RGB LEDs and backlight RGB LEDs, from KP Republic.
 
