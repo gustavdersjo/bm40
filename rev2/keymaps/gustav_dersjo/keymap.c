@@ -44,6 +44,11 @@ bool inj_holding = false;
 const uint16_t INJ_INITIAL_DELAY = 400;
 const uint16_t INJ_HOLDING_DELAY = 100;
 
+uint8_t boot_effect = 1;
+const uint8_t boot_effect_stop = 2;
+const Timer_Ramp timer_boot_effect_default = {0, 0, 127, 0, true};
+Timer_Ramp timer_boot_effect = timer_boot_effect_default;
+
 /*
 #define LOWER  FN_MO13
 #define RAISE  FN_MO23
@@ -75,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * |------+------+------+------+------+------+------+------+------+------+------+------|
  * | CAPS |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |  -   |  =   |  {   |  }   |  \   |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      |      | WBAK | PgUp | WFfw |
+ * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      |      | WBak | PgUp | WFfw |
  * |------+------+------+------+------+------+------+------+------+------+------+------|
  * |      |      |      |      |      |             |      |      | Home | PgDn | End  |
  * `-----------------------------------------------------------------------------------'
@@ -161,6 +166,7 @@ uint16_t keycode_at_layer_below(const uint8_t col, const uint8_t row)
     );
 }
 
+/*
 HSV brighten(HSV hsv, uint8_t amount, bool limit_to_board_val) {
     // Brighten
     hsv.v += amount;
@@ -172,16 +178,17 @@ HSV brighten(HSV hsv, uint8_t amount, bool limit_to_board_val) {
 
     return hsv;
 }
+*/
 
 void handle_timer(uint16_t *timer_data,
-                  uint8_t timer_breakpoint,
+                  uint8_t timer_duration,
                   uint8_t *ramp,
                   uint8_t ramp_start,
                   uint8_t ramp_end,
                   bool *ramp_flip,
                   uint8_t ramp_step)
 {
-    if (timer_elapsed(*timer_data) > timer_breakpoint) {
+    if (timer_elapsed(*timer_data) > timer_duration) {
         // do something if 100ms or more have passed
         *ramp += *ramp_flip ? ramp_step : -ramp_step;
         if (*ramp <= ramp_start ||
@@ -225,7 +232,8 @@ void light_keycode(const uint8_t led_index,
                    const uint8_t layer)
 {
     // Color definitions
-    const HSV hsv_fkey = {31, 211, 120};
+    const HSV hsv_default = rgb_matrix_get_hsv();
+    const HSV hsv_fkey = {12, 250, 120};//const HSV hsv_fkey = {31, 211, 120};
     const HSV hsv_num = {122, 205, 120};
     const HSV hsv_danger = {0, 255, timer_danger.ramp};
     const HSV hsv_caps_inactive = {248, 255, 91};
@@ -245,14 +253,14 @@ void light_keycode(const uint8_t led_index,
         || keycode == CLR_RST || keycode == DEBUG) {
         hsv = hsv_danger;
     }
-    else if (keycode == KC_CAPS || keycode == CAPS_WORD) {
+    else if (keycode == KC_TAB || keycode == KC_CAPS || keycode == CAPS_WORD) {
         if (is_caps_on()) {
             hsv = hsv_caps_active;
         }
         else if (is_caps_word_on()) {
             hsv = hsv_caps_word_active;
         } else {
-            hsv = hsv_caps_inactive;
+            if (keycode != KC_TAB) hsv = hsv_caps_inactive;
         }
     }
     else if ((keycode >= KC_1 && keycode <= KC_0) || (keycode >= KC_KP_SLASH && keycode <= KC_KP_DOT) || keycode == KC_KP_EQUAL || keycode == KC_KP_COMMA || keycode == KC_KP_EQUAL_AS400) {
@@ -299,7 +307,10 @@ void light_keycode(const uint8_t led_index,
         rgb_matrix_set_color(led_index, 0, 0, 0);
         return;
     }
-    else return;  // Skip unknown keycodes
+    else {
+        if (layer != 0) hsv = hsv_default;
+        else return;  // Skip unknown keycodes
+    }
 
     // Enforce config limit
     if (hsv.v > RGBLIGHT_LIMIT_VAL) hsv.v = RGBLIGHT_LIMIT_VAL;
@@ -311,6 +322,29 @@ void light_keycode(const uint8_t led_index,
 }
 
 void rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
+    if (boot_effect > 0) {
+        if (boot_effect > boot_effect_stop) {
+            boot_effect = 0;
+            rgb_matrix_reload_from_eeprom();
+        } else {
+            bool old_flip = timer_boot_effect.ramp_flip;
+            handle_timer(
+                &timer_boot_effect.timer_data, 2,
+                &timer_boot_effect.ramp,
+                timer_boot_effect.ramp_start, timer_boot_effect.ramp_end,
+                &timer_boot_effect.ramp_flip, 1
+            );
+            if (old_flip != timer_boot_effect.ramp_flip) boot_effect++;
+
+            rgb_matrix_sethsv_noeeprom(
+                rgb_matrix_get_hue(),
+                rgb_matrix_get_sat(),
+                timer_boot_effect.ramp
+            );
+        }
+        return;
+    }
+
     const uint8_t layer = get_highest_layer(layer_state);
     for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
         for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
@@ -355,6 +389,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case INJ:
             inj_active = record->event.pressed;
             // no return here
+            break;
+        case KC_TAB:
+            if (!record->event.pressed) {
+                if (is_caps_on()) tap_code(KC_CAPS);
+                else if (is_caps_word_on()) caps_word_off();
+                else register_code(KC_TAB);
+            } else {
+                unregister_code(KC_TAB);
+            }
+            return false;
             break;
         case KC_CAPS:
             if (record->event.pressed) {
@@ -425,14 +469,23 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             break;
     }
 
+    inj_holding = false;
+    inj_first = true;
     if (inj_active && tmp_keycode != INJ && record->event.pressed) {
         inj_keycode = tmp_keycode;
         return false;
     } else {
         inj_keycode = KC_NO;
-        inj_holding = false;
-        inj_first = true;
     }
 
     return true;
+}
+
+void keyboard_post_init_user(void) {
+    rgb_matrix_enable_noeeprom();
+    rgb_matrix_set_speed_noeeprom(127);
+    rgb_matrix_mode_noeeprom(RGB_MATRIX_SOLID_COLOR); // RGB_MATRIX_BREATHING
+
+    boot_effect = 1;
+    timer_boot_effect.ramp = timer_boot_effect_default.ramp;
 }
