@@ -394,9 +394,10 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             if (!record->event.pressed) {
                 if (is_caps_on()) tap_code(KC_CAPS);
                 else if (is_caps_word_on()) caps_word_off();
-                else register_code(KC_TAB);
+                else return true;
             } else {
-                unregister_code(KC_TAB);
+                if (is_caps_on() || is_caps_word_on()) return false;
+                else return true;
             }
             return false;
             break;
